@@ -25,6 +25,7 @@ The GUI is expected to:
 import os
 import time
 import random
+import sys
 
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException, WebDriverException, StaleElementReferenceException
