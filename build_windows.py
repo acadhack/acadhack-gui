@@ -23,7 +23,7 @@ def build():
             spec_file,
             '--distpath', os.path.join(base_dir, 'dist'),
             '--workpath', os.path.join(base_dir, 'build'),
-            '--specpath', base_dir,
+
             '--clean',
             '--noconfirm',
         ])
