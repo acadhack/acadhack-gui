@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      PYTHONUTF8: 1
     
     strategy:
       matrix:
@@ -46,6 +48,13 @@ jobs:
           echo "[+] All required files found"
           Get-ChildItem -Recurse
       
+      - name: Debug - Check File Structure
+        shell: cmd
+        run: |
+          echo "Current Directory: %CD%"
+          if exist web ( echo Web folder found ) else ( echo Web folder MISSING )
+          dir web
+      
       - name: Install dependencies
         run: |
           echo "Installing from requirements_windows.txt..."
@@ -74,6 +83,12 @@ jobs:
           Get-Item "dist/app_webview/app_webview.exe" | Select-Object FullName, Length
           echo "Contents of dist/app_webview:"
           Get-ChildItem "dist/app_webview" -Recurse | Select-Object FullName | Select-Object -First 50
+      
+      - name: Debug - List Dist Content
+        shell: cmd
+        run: |
+          echo Listing Dist folder...
+          dir dist /s
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
