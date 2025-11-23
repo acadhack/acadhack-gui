@@ -26,6 +26,11 @@ def setup_frozen_environment():
         
         # Set Qt plugin path
         qt_plugin_path = os.path.join(base_dir, 'PySide6', 'plugins')
+        
+        # Try _internal subdirectory (OneDir mode)
+        if not os.path.exists(qt_plugin_path):
+            qt_plugin_path = os.path.join(base_dir, '_internal', 'PySide6', 'plugins')
+            
         if os.path.exists(qt_plugin_path):
             os.environ['QT_PLUGIN_PATH'] = qt_plugin_path
             print(f"Qt plugin path set to: {qt_plugin_path}")

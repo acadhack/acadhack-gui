@@ -8,12 +8,15 @@ env/
 # Project Specific
 chrome_data/
 config.json
-acadhack.log
+*.log
 
 # Build Artifacts
 dist/
 build/
 
+
+# Temporary
+temp_*/
 
 # OS Specific
 .DS_Store
