@@ -14,7 +14,7 @@ Key improvements:
 
 import sys
 import os
-from PyInstaller.utils.hooks import get_module_file_path, collect_submodules
+
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT, BUNDLE
 
 # Path to spec file directory
