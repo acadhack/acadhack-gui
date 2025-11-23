@@ -62,7 +62,7 @@ class WindowsBuilder:
             self.log("ERROR: web/ folder not found", 'ERROR')
             return False
         
-        self.log("✓ All required files and folders found")
+        self.log("[+] All required files and folders found")
         return True
     
     def clean_previous_builds(self):
@@ -73,7 +73,7 @@ class WindowsBuilder:
                 if dir_path.exists():
                     self.log(f"Removing {dir_path}")
                     shutil.rmtree(dir_path)
-            self.log("✓ Clean complete")
+            self.log("[+] Clean complete")
     
     def install_dependencies(self):
         """Install Python dependencies from requirements file"""
@@ -92,7 +92,7 @@ class WindowsBuilder:
                 capture_output=False
             )
             
-            self.log("✓ Dependencies installed successfully")
+            self.log("[+] Dependencies installed successfully")
             return True
         except subprocess.CalledProcessError as e:
             self.log(f"ERROR: Failed to install dependencies: {e}", 'ERROR')
@@ -111,7 +111,7 @@ class WindowsBuilder:
                 capture_output=False
             )
             
-            self.log("✓ PyInstaller build completed")
+            self.log("[+] PyInstaller build completed")
             return True
         except subprocess.CalledProcessError as e:
             self.log(f"ERROR: PyInstaller failed: {e}", 'ERROR')
@@ -137,8 +137,8 @@ class WindowsBuilder:
             self.log(f"WARNING: Qt plugins directory not found at expected location", 'WARNING')
             # PyInstaller onedir might put it elsewhere, so just warn
         
-        self.log(f"✓ Executable found: {exe_path}")
-        self.log(f"✓ Web folder found: {web_path}")
+        self.log(f"[+] Executable found: {exe_path}")
+        self.log(f"[+] Web folder found: {web_path}")
         return True
     
     def report_results(self):
@@ -153,7 +153,7 @@ class WindowsBuilder:
         if exe_path.exists():
             # Get file size
             size_mb = exe_path.stat().st_size / (1024 * 1024)
-            print(f"✓ SUCCESS! Executable built successfully")
+            print(f"[+] SUCCESS! Executable built successfully")
             print(f"\nOutput location: {app_dir}")
             print(f"Executable: {exe_path}")
             print(f"Size: {size_mb:.2f} MB")
@@ -162,7 +162,7 @@ class WindowsBuilder:
             print(f"  .\\app_webview.exe")
             return True
         else:
-            print(f"✗ FAILED: Build did not produce expected output")
+            print(f"[!] FAILED: Build did not produce expected output")
             return False
     
     def build(self):
