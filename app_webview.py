@@ -263,8 +263,8 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Failed to create default config: {e}")
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    index_path = os.path.join(base_dir, "web", "index.html")
+    # base_dir = os.path.dirname(os.path.abspath(__file__)) # This line is no longer needed
+    index_path = os.path.join(WEB_FOLDER, "index.html")
 
     window = webview.create_window(
         "AcadHack Control Panel",
