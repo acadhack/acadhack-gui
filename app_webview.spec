@@ -39,5 +39,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='web/assets/logo-dark.ico' if os.path.exists('web/assets/logo-dark.ico') else None
+    icon='icon.ico'
 )
