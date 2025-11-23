@@ -19,6 +19,23 @@ import config
 # CSS animations, fixing the "choppy" rendering on Linux.
 os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--enable-gpu-rasterization --ignore-gpu-blocklist --enable-zero-copy"
 
+def setup_frozen_environment():
+    """Configure environment for PyInstaller frozen executables."""
+    if getattr(sys, 'frozen', False):
+        base_dir = sys._MEIPASS
+        
+        # Set Qt plugin path
+        qt_plugin_path = os.path.join(base_dir, 'PySide6', 'plugins')
+        if os.path.exists(qt_plugin_path):
+            os.environ['QT_PLUGIN_PATH'] = qt_plugin_path
+            print(f"Qt plugin path set to: {qt_plugin_path}")
+        
+        return base_dir
+    return os.path.dirname(os.path.abspath(__file__))
+
+# Setup environment before importing webview
+base_path = setup_frozen_environment()
+
 # Global references used by the poller and closing handler
 api = None
 window = None
