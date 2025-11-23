@@ -99,21 +99,40 @@ class WindowsBuilder:
             return False
     
     def run_pyinstaller(self):
-        """Execute PyInstaller with the spec file"""
+        """Execute PyInstaller directly with explicit arguments"""
         self.log("Running PyInstaller...")
-        self.log(f"Using spec file: {self.spec_file}")
+        
+        import PyInstaller.__main__
+        
+        # Define paths
+        web_source = self.root_dir / 'web'
+        sep = ';' if os.name == 'nt' else ':'
+        
+        # Arguments for PyInstaller
+        args = [
+            str(self.root_dir / 'app_webview.py'),
+            '--name=app_webview',
+            '--onedir',
+            '--windowed',
+            '--clean',
+            '--noconfirm',
+            f'--add-data={web_source}{sep}web',
+            f'--runtime-hook={self.runtime_hook}',
+            # Exclude unnecessary modules to save space/time
+            '--exclude-module=tkinter',
+            '--exclude-module=matplotlib',
+            '--exclude-module=numpy',
+        ]
+        
+        self.log(f"PyInstaller arguments: {args}")
         
         try:
-            result = subprocess.run(
-                [sys.executable, '-m', 'PyInstaller', str(self.spec_file), '--clean'],
-                cwd=str(self.root_dir),
-                check=True,
-                capture_output=False
-            )
+            # Run PyInstaller directly
+            PyInstaller.__main__.run(args)
             
             self.log("[+] PyInstaller build completed")
             return True
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             self.log(f"ERROR: PyInstaller failed: {e}", 'ERROR')
             return False
     
