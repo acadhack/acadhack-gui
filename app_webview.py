@@ -13,6 +13,20 @@ import queue
 # which is often more stable on Windows than native OpenGL drivers.
 if sys.platform == 'win32':
     os.environ["QT_OPENGL"] = "angle"
+
+# --- ARCHITECT OPTIMIZATION: UNCAP FPS ---
+# These flags disable the 60FPS limit and VSync in Chromium (QtWebEngine).
+# This fixes the "glitchy" feel on Linux manual runs and ensures smooth
+# animations on all platforms.
+os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = (
+    "--disable-frame-rate-limit "
+    "--disable-gpu-vsync "
+    "--enable-gpu-rasterization "
+    "--enable-zero-copy "
+    "--ignore-gpu-blocklist "
+    "--enable-smooth-scrolling"
+)
+
 import webview
 from importlib import reload
 
@@ -20,11 +34,6 @@ from main import AutomationController
 from config_manager import ConfigManager
 import config
 
-
-# --- ARCHITECT OPTIMIZATION: FORCE HARDWARE ACCELERATION ---
-# These flags ensure QtWebEngine (Chromium) uses the GPU for
-# CSS animations, fixing the "choppy" rendering on Linux.
-os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--enable-gpu-rasterization --ignore-gpu-blocklist --enable-zero-copy"
 
 # Global references used by the poller and closing handler
 api = None

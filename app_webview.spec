@@ -21,7 +21,11 @@ a = Analysis(
         'PySide6.QtTest', 'PySide6.QtTextToSpeech', 'PySide6.QtVirtualKeyboard',
         'PySide6.QtWebSockets', 'tkinter', 'matplotlib', 'numpy', 'pandas',
         'PySide6.QtDesigner', 'PySide6.QtHelp', 'PySide6.QtPrintSupport',
-        'PySide6.QtUiTools', 'PySide6.QtXml'
+        'PySide6.QtUiTools', 'PySide6.QtXml',
+        # Aggressive Excludes
+        'PySide6.QtQuick3D', 'PySide6.QtQuick3DUtils', 'PySide6.QtQuick3DRuntimeRender',
+        'PySide6.QtQuick3DAssetImport', 'PySide6.QtPdf', 'PySide6.QtPdfWidgets',
+        'PySide6.QtBodymovin', 'PySide6.QtLocation', 'PySide6.QtNfc', 'PySide6.QtBluetooth'
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
