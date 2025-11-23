@@ -21,12 +21,11 @@ if not exist "%VENV_DIR%" (
     call "%VENV_DIR%\Scripts\activate.bat"
     python -m pip install --upgrade pip
     
-    :: Install requirements, ignoring errors for Linux-specific packages like PyGObject if they fail
-    pip install -r requirements.txt
+    :: Install requirements using the Windows-specific file
+    pip install -r requirements_windows.txt
     if %errorlevel% neq 0 (
         echo.
         echo [WARNING] Some dependencies failed to install. 
-        echo This is expected if requirements.txt contains Linux-specific packages like PyGObject.
         echo Attempting to proceed...
     )
 ) else (
