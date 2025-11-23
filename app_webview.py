@@ -58,6 +58,7 @@ class Api:
                 "minDelaySeconds": settings.get("MIN_DELAY_SECONDS", 5.0),
                 "maxDelaySeconds": settings.get("MAX_DELAY_SECONDS", 20.0),
                 "boosterEnabled": settings.get("BOOSTER_ENABLED", False),
+                "THEME": settings.get("THEME", "dark"),
             }
         except Exception as e:
             return {"error": f"Failed to read settings: {e}"}
@@ -73,6 +74,7 @@ class Api:
                 "MIN_DELAY_SECONDS": float(settings_dict.get("minDelaySeconds", 5.0)),
                 "MAX_DELAY_SECONDS": float(settings_dict.get("maxDelaySeconds", 20.0)),
                 "BOOSTER_ENABLED": bool(settings_dict.get("boosterEnabled", False)),
+                "THEME": str(settings_dict.get("THEME", "dark")),
             }
             self.config_manager.update_settings(cleaned_settings)
             return {"status": "success"}

@@ -35,11 +35,14 @@ let isBrowserRunning = false;
 // =========================================
 
 // Theme Toggle
-btnTheme.addEventListener('click', () => {
+btnTheme.addEventListener('click', async () => {
     const html = document.documentElement;
     const current = html.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
+
+    // Save immediately
+    await handleSaveClick(true); // Pass true to indicate silent save (optional, or just reuse logic)
 });
 
 // Stealth Toggle Animation
@@ -161,6 +164,11 @@ function load_settings(settings) {
     if (boosterToggle) {
         boosterToggle.checked = !!settings.boosterEnabled;
     }
+
+    // Apply Theme
+    if (settings.THEME) {
+        document.documentElement.setAttribute('data-theme', settings.THEME);
+    }
 }
 
 // Called by Python when browser launches/closes
@@ -250,7 +258,9 @@ async function handleSaveClick() {
         stealthEnabled: !!stealthToggle?.checked,
         minDelaySeconds: parseFloat(minDelayInput?.value || '0') || 0,
         maxDelaySeconds: parseFloat(maxDelayInput?.value || '0') || 0,
+        maxDelaySeconds: parseFloat(maxDelayInput?.value || '0') || 0,
         boosterEnabled: !!boosterToggle?.checked,
+        THEME: document.documentElement.getAttribute('data-theme') || 'dark',
     };
 
     try {

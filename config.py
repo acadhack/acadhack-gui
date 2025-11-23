@@ -22,6 +22,7 @@ import os
 API_KEY = "YOUR_API_KEY_HERE"
 GEMINI_MODEL_NAME = "gemini-2.5-flash"
 API_RATE_LIMIT_INTERVAL = 2.0  # seconds
+THEME = "dark"  # Default theme
 
 # Load overrides from config.json if it exists
 _base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -34,6 +35,7 @@ if os.path.exists(_config_json_path):
             API_KEY = _data.get("API_KEY", API_KEY)
             GEMINI_MODEL_NAME = _data.get("GEMINI_MODEL_NAME", GEMINI_MODEL_NAME)
             API_RATE_LIMIT_INTERVAL = _data.get("API_RATE_LIMIT_INTERVAL", API_RATE_LIMIT_INTERVAL)
+            THEME = _data.get("THEME", THEME)
             # We will handle Stealth and Booster updates below after class definitions
     except Exception as e:
         print(f"Error loading config.json: {e}")

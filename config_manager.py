@@ -65,6 +65,7 @@ class ConfigManager:
             "MIN_DELAY_SECONDS": config.STEALTH.MIN_DELAY_SECONDS,
             "MAX_DELAY_SECONDS": config.STEALTH.MAX_DELAY_SECONDS,
             "BOOSTER_ENABLED": config.BOOSTER.ENABLED,
+            "THEME": config.THEME,
         }
 
     def update_settings(self, settings: Dict[str, Any]) -> None:
@@ -82,6 +83,7 @@ class ConfigManager:
         current_data["MIN_DELAY_SECONDS"] = float(settings.get("MIN_DELAY_SECONDS", 5.0))
         current_data["MAX_DELAY_SECONDS"] = float(settings.get("MAX_DELAY_SECONDS", 20.0))
         current_data["BOOSTER_ENABLED"] = bool(settings.get("BOOSTER_ENABLED", False))
+        current_data["THEME"] = str(settings.get("THEME", "dark"))
 
         self._write_json(current_data)
 
