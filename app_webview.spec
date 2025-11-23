@@ -6,7 +6,7 @@ a = Analysis(
     ['app_webview.py'],
     pathex=[],
     binaries=[],
-    datas=[('web', 'web')],
+    datas=[('web', 'web'), ('icon.ico', '.')],
     hiddenimports=['PySide6', 'selenium', 'pywebview', 'engineio.async_drivers.threading', 'qtpy'],
     hookspath=[],
     hooksconfig={},
@@ -19,7 +19,9 @@ a = Analysis(
         'PySide6.QtSensors', 'PySide6.QtSerialPort', 'PySide6.QtSql',
         'PySide6.QtStateMachine', 'PySide6.QtSvg', 'PySide6.QtSvgWidgets',
         'PySide6.QtTest', 'PySide6.QtTextToSpeech', 'PySide6.QtVirtualKeyboard',
-        'PySide6.QtWebSockets', 'tkinter', 'matplotlib', 'numpy', 'pandas'
+        'PySide6.QtWebSockets', 'tkinter', 'matplotlib', 'numpy', 'pandas',
+        'PySide6.QtDesigner', 'PySide6.QtHelp', 'PySide6.QtPrintSupport',
+        'PySide6.QtUiTools', 'PySide6.QtXml'
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,

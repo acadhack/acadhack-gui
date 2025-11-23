@@ -8,9 +8,11 @@ import os
 import sys # Moved sys import up for platform check
 import threading
 import queue
-# Set QT_OPENGL to software on Windows to fix CSS/rendering glitches
+# Set QT_OPENGL to angle on Windows to fix CSS/rendering glitches
+# ANGLE (Almost Native Graphics Layer Engine) translates OpenGL to DirectX,
+# which is often more stable on Windows than native OpenGL drivers.
 if sys.platform == 'win32':
-    os.environ["QT_OPENGL"] = "software"
+    os.environ["QT_OPENGL"] = "angle"
 import webview
 from importlib import reload
 
