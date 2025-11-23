@@ -14,6 +14,24 @@ from main import AutomationController
 from config_manager import ConfigManager
 import config
 import sys
+import traceback
+
+# --- DEBUG LOGGING SETUP ---
+# Write startup errors to a file since we can't see the console
+debug_log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "startup_debug.txt")
+if getattr(sys, 'frozen', False):
+    debug_log_path = os.path.join(os.path.dirname(sys.executable), "startup_debug.txt")
+
+def log_debug(msg):
+    try:
+        with open(debug_log_path, "a", encoding="utf-8") as f:
+            f.write(f"{msg}\n")
+    except Exception:
+        pass
+
+log_debug("--- APP STARTUP ---")
+log_debug(f"Python version: {sys.version}")
+log_debug(f"Executable: {sys.executable}")
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -31,6 +49,37 @@ def resource_path(relative_path):
 
 # Use the helper to get the correct path
 WEB_FOLDER = resource_path('web')
+log_debug(f"WEB_FOLDER resolved to: {WEB_FOLDER}")
+
+# --- EXPLICIT QT IMPORT CHECK ---
+try:
+    log_debug("Attempting to import PySide6...")
+    import PySide6
+    log_debug(f"PySide6 imported. Version: {PySide6.__version__}")
+    
+    log_debug("Attempting to import PySide6.QtCore...")
+    from PySide6 import QtCore
+    log_debug(f"QtCore imported. Path: {QtCore.__file__}")
+    
+    log_debug("Attempting to import PySide6.QtWidgets...")
+    from PySide6 import QtWidgets
+    log_debug("QtWidgets imported.")
+    
+    log_debug("Attempting to import PySide6.QtWebEngineWidgets...")
+    from PySide6 import QtWebEngineWidgets
+    log_debug("QtWebEngineWidgets imported.")
+    
+    # Check plugins
+    import PySide6.QtGui
+    log_debug(f"QT_PLUGIN_PATH env: {os.environ.get('QT_PLUGIN_PATH', 'Not Set')}")
+    log_debug(f"QT_QPA_PLATFORM_PLUGIN_PATH env: {os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH', 'Not Set')}")
+    
+except Exception as e:
+    log_debug(f"CRITICAL ERROR importing Qt: {e}")
+    log_debug(traceback.format_exc())
+    # We don't exit here, we let pywebview try (and likely fail), but now we have logs.
+
+# --- ARCHITECT OPTIMIZATION: FORCE HARDWARE ACCELERATION ---
 
 # --- ARCHITECT OPTIMIZATION: FORCE HARDWARE ACCELERATION ---
 # These flags ensure QtWebEngine (Chromium) uses the GPU for
