@@ -7,7 +7,7 @@ env/
 
 # Project Specific
 chrome_data/
-# config.json
+config.json
 *.log
 
 # Build Artifacts
