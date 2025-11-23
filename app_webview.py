@@ -71,11 +71,32 @@ try:
     
     # Check plugins
     import PySide6.QtGui
-    log_debug(f"QT_PLUGIN_PATH env: {os.environ.get('QT_PLUGIN_PATH', 'Not Set')}")
-    log_debug(f"QT_QPA_PLATFORM_PLUGIN_PATH env: {os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH', 'Not Set')}")
+    plugin_path = os.environ.get('QT_PLUGIN_PATH', 'Not Set')
+    platform_plugin_path = os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH', 'Not Set')
+    
+    log_debug(f"QT_PLUGIN_PATH env: {plugin_path}")
+    log_debug(f"QT_QPA_PLATFORM_PLUGIN_PATH env: {platform_plugin_path}")
+
+    # VERIFY PLUGIN FILES
+    if os.path.exists(platform_plugin_path):
+        try:
+            files = os.listdir(platform_plugin_path)
+            log_debug(f"Contents of platforms dir: {files}")
+        except Exception as e:
+            log_debug(f"Could not list platforms dir: {e}")
+    else:
+        log_debug("WARNING: Platforms dir does not exist!")
+
+    # DEEP DIAGNOSTIC: Try to create QApplication manually
+    # This will throw the specific error if the platform plugin is missing/broken
+    log_debug("Attempting to create QApplication manually...")
+    app = QtWidgets.QApplication.instance()
+    if app is None:
+        app = QtWidgets.QApplication(sys.argv)
+    log_debug("QApplication created successfully!")
     
 except Exception as e:
-    log_debug(f"CRITICAL ERROR importing Qt: {e}")
+    log_debug(f"CRITICAL ERROR initializing Qt: {e}")
     log_debug(traceback.format_exc())
     # We don't exit here, we let pywebview try (and likely fail), but now we have logs.
 
