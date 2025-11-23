@@ -1,10 +1,18 @@
-beautifulsoup4==4.14.2
-customtkinter==5.2.2
+# Core dependencies
+pywebview[qt]==6.1
+PySide6==6.7.2
+selenium==4.16.0
+webdriver-manager==4.0.1
+
+# Critical: Do NOT use PyQt5 alongside PySide6
+# PyInstaller will fail if multiple Qt bindings are present
+
+# Add your app-specific requirements below:
+# requests==2.31.0
+# beautifulsoup4==4.12.2
+# python-dotenv==1.0.0
 google-generativeai==0.8.5
-pywebview==6.1
-PySide6==6.10.1
-selenium==4.38.0
-webdriver-manager==4.0.2
 requests==2.32.5
 python-dotenv==1.2.1
-PyInstaller>=6.7.0
+beautifulsoup4==4.14.2
+customtkinter==5.2.2

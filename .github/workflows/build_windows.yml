@@ -1,30 +1,25 @@
-name: Build AcadHack Windows Executable
+name: Build Windows Executable
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [ main, develop ]
   pull_request:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual trigger from Actions tab
 
 jobs:
   build:
-    name: Build Windows Executable
     runs-on: windows-latest
+    
     strategy:
       matrix:
-        python-version: ['3.11']
+        python-version: ["3.11"]
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history for versioning
       
-      - name: Setup Python ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -32,124 +27,85 @@ jobs:
       
       - name: Display Python version
         run: |
-          python --version
+          python -c "import sys; print(f'Python {sys.version}')"
           python -m pip --version
       
       - name: Upgrade pip and setuptools
         run: |
           python -m pip install --upgrade pip setuptools wheel
       
+      - name: Verify project structure
+        run: |
+          echo "Checking project structure..."
+          if (-not (Test-Path "app_webview.py")) { exit 1 }
+          if (-not (Test-Path "web")) { exit 1 }
+          if (-not (Test-Path "requirements_windows.txt")) { exit 1 }
+          if (-not (Test-Path "app_webview.spec")) { exit 1 }
+          if (-not (Test-Path "build_windows.py")) { exit 1 }
+          if (-not (Test-Path "rthook_pyside6_qtplugins.py")) { exit 1 }
+          echo "✓ All required files found"
+          dir /s
+      
       - name: Install dependencies
         run: |
+          echo "Installing from requirements_windows.txt..."
           python -m pip install -r requirements_windows.txt
+          echo "PyInstaller version:"
+          pyinstaller --version
       
-      - name: Verify spec file exists
+      - name: Build Windows executable
         run: |
-          if (-not (Test-Path "app_webview.spec")) {
-              Write-Error "Spec file not found!"
-              exit 1
+          echo "Starting build..."
+          python build_windows.py
+      
+      - name: Verify build output
+        run: |
+          echo "Verifying build output..."
+          if (-not (Test-Path "dist/app_webview/app_webview.exe")) {
+            echo "ERROR: Executable not found"
+            exit 1
           }
-          Write-Output "✓ app_webview.spec found"
-      
-      - name: Run PyInstaller build
-        run: |
-          python -m PyInstaller app_webview.spec --noconfirm --clean
-        working-directory: ${{ github.workspace }}
-      
-      - name: Verify executable was created
-        run: |
-          $exe_path = ".\dist\AcadHack\AcadHack.exe"
-          if (Test-Path $exe_path) {
-              Write-Output "✓ Executable found: $exe_path"
-              Get-Item $exe_path | Select-Object FullName, Length
-          } else {
-              Write-Error "Executable not found at $exe_path"
-              Write-Output "Contents of dist folder:"
-              if (Test-Path ".\dist") {
-                  Get-ChildItem -Recurse ".\dist" | Select-Object FullName
-              } else {
-                  Write-Error "dist/ folder does not exist!"
-              }
-              exit 1
+          if (-not (Test-Path "dist/app_webview/web")) {
+            echo "ERROR: web folder not found"
+            exit 1
           }
+          echo "✓ Build verification passed"
+          echo "Executable info:"
+          Get-Item "dist/app_webview/app_webview.exe" | Select-Object FullName, Length
+          echo "Contents of dist/app_webview:"
+          Get-ChildItem "dist/app_webview" -Recurse | Select-Object FullName | head -50
       
-      - name: Verify assets and plugins
-        run: |
-          $checks = @(
-              @{Name="_internal folder"; Path=".\dist\AcadHack\_internal"},
-              @{Name="PySide6 plugins"; Path=".\dist\AcadHack\_internal\PySide6\plugins"},
-              @{Name="web assets"; Path=".\dist\AcadHack\web"},
-              @{Name="qwindows.dll"; Path=".\dist\AcadHack\_internal\PySide6\plugins\platforms\qwindows.dll"}
-          )
-          
-          foreach ($check in $checks) {
-              if (Test-Path $check.Path) {
-                  Write-Output "✓ $($check.Name) found"
-              } else {
-                  Write-Warning "⚠ $($check.Name) NOT found at $($check.Path)"
-              }
-          }
-      
-      - name: Create build summary
-        run: |
-          $exe_path = ".\dist\AcadHack\AcadHack.exe"
-          $file_info = Get-Item $exe_path
-          $size_mb = [math]::Round($file_info.Length / 1MB, 2)
-          
-          Write-Output @"
-          
-          ========================================
-          BUILD SUMMARY
-          ========================================
-          Executable: $($file_info.FullName)
-          Size: $size_mb MB
-          Last Modified: $($file_info.LastWriteTime)
-          
-          Build output location: ${{ github.workspace }}\dist\AcadHack\
-          ========================================
-          "@ | Tee-Object -FilePath build_summary.txt
-      
-      - name: Upload executable as artifact
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         if: success()
-        uses: actions/upload-artifact@v4
         with:
-          name: AcadHack-Windows-exe
-          path: dist/AcadHack/
+          name: app_webview-windows
+          path: dist/app_webview/
           retention-days: 30
-          if-no-files-found: error
+          compression-level: 6
       
-      - name: Upload build summary
+      - name: Create release (optional)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/app_webview/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build summary
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-summary
-          path: build_summary.txt
-          retention-days: 7
-  
-  # Optional: Test the executable (advanced)
-  test:
-    name: Test Executable
-    runs-on: windows-latest
-    needs: build
-    if: success()
-    
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: AcadHack-Windows-exe
-          path: ./app-dist
-      
-      - name: List contents
         run: |
-          Get-ChildItem -Recurse ".\app-dist" | Select-Object FullName
-      
-      - name: Test executable existence
-        run: |
-          $exe = ".\app-dist\AcadHack.exe"
-          if (Test-Path $exe) {
-              Write-Output "✓ Executable verified: $exe"
+          echo "======================================="
+          echo "BUILD SUMMARY"
+          echo "======================================="
+          if (Test-Path "dist/app_webview/app_webview.exe") {
+            echo "✓ Build Status: SUCCESS"
+            $fileSize = (Get-Item "dist/app_webview/app_webview.exe").Length / 1MB
+            echo "✓ Executable Size: $($fileSize.ToString('F2')) MB"
+            echo "✓ Output: dist/app_webview/"
+            echo ""
+            echo "Artifact ready for download from GitHub Actions"
           } else {
-              Write-Error "Executable not found!"
-              exit 1
+            echo "✗ Build Status: FAILED"
+            exit 1
           }

@@ -1,121 +1,133 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-Robust PyInstaller spec file for AcadHack GUI application.
-Targets: Windows with PySide6, pywebview, and selenium.
+PyInstaller spec file for PySide6 + PyWebview application
+Stack: Python 3.11, PySide6, PyWebview (Qt backend), Selenium
+Platform: Windows (GitHub Actions)
 
-Key improvements:
-1. Automatic PySide6 plugin discovery (no manual path hacking)
-2. Proper runtime hook for QT_PLUGIN_PATH
-3. Minimal hidden imports (lets PyInstaller resolve dependencies)
-4. Proper exclusions to prevent bloat
-5. OneDir mode for easier debugging (PySide6 plugins must be external)
-6. Console disabled for GUI app
+Key fixes applied:
+1. Proper Qt plugin collection using collect()
+2. Web folder added as datas (NOT binaries)
+3. Runtime hook to set QT_QPA_PLATFORM_PLUGIN_PATH
+4. UPX exclusion for Qt DLLs
+5. Hidden imports for PySide6 and pywebview
+6. Avoids __file__ issues with proper path handling
 """
 
-import sys
-import os
-
-from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT, BUNDLE
-
-# Path to spec file directory
-SPECPATH = os.path.dirname(os.path.abspath(__file__))
-
-block_cipher = None
-
-# === HIDDEN IMPORTS ===
-# Keep this minimal - PyInstaller's hooks should resolve most dependencies
-hidden_imports = [
-    'pywebview',
-    'pywebview.api',
-    'PySide6',
-    'PySide6.QtCore',
-    'PySide6.QtGui',
-    'PySide6.QtWidgets',
-    'PySide6.QtWebEngineWidgets',
-    'selenium',
-    'selenium.webdriver',
-    'webdriver_manager',
-    'requests',
-    'bs4',
-    'google.generativeai',
-]
-
-# === RUNTIME HOOKS ===
-# Create a runtime hook to set QT_PLUGIN_PATH for PySide6
-runtime_hook_code = """
 import os
 import sys
+from PyInstaller.utils.hooks import collect_data_files
 
-# Set QT_PLUGIN_PATH to the bundled PySide6 plugins
-if getattr(sys, 'frozen', False):
-    base_dir = sys._MEIPASS
-    qt_plugins = os.path.join(base_dir, 'PySide6', 'plugins')
-    if os.path.exists(qt_plugins):
-        os.environ['QT_PLUGIN_PATH'] = qt_plugins
-"""
+# Get current working directory (use this, NOT __file__)
+spec_dir = os.getcwd()
 
-runtime_hook_path = os.path.join(SPECPATH, 'runtime_hook_qt.py')
-with open(runtime_hook_path, 'w') as f:
-    f.write(runtime_hook_code)
+# Paths for your application
+app_entry_point = 'app_webview.py'
+web_folder = 'web'
 
-# === ANALYSIS ===
+# Verify paths exist
+if not os.path.exists(app_entry_point):
+    raise FileNotFoundError(f"Entry point not found: {app_entry_point}")
+if not os.path.isdir(web_folder):
+    raise FileNotFoundError(f"Web folder not found: {web_folder}")
+
+# ============================================================================
+# PyInstaller Analysis Configuration
+# ============================================================================
+
 a = Analysis(
-    ['app_webview.py'],
-    pathex=[SPECPATH],
+    [app_entry_point],
+    pathex=[],
     binaries=[],
     datas=[
-        ('web', 'web'),  # Frontend assets must be included
+        # CRITICAL: Add web folder as data (destination must be relative path)
+        (web_folder, web_folder),
+        # Collect PySide6 data files (plugins, translations)
+        *collect_data_files('PySide6'),
     ],
-    hiddenimports=hidden_imports,
+    hiddenimports=[
+        # PySide6/Qt core modules
+        'PySide6.QtCore',
+        'PySide6.QtGui',
+        'PySide6.QtWidgets',
+        'PySide6.QtNetwork',
+        'PySide6.QtWebEngineWidgets',
+        # PyWebview
+        'pywebview',
+        'pywebview.api',
+        # Selenium and dependencies
+        'selenium',
+        'selenium.webdriver',
+        'selenium.webdriver.chrome',
+        'selenium.webdriver.common.keys',
+        'selenium.webdriver.support',
+        'webdriver_manager',
+        'webdriver_manager.chrome',
+        # Common dependencies that may be missed
+        'pkg_resources.extern',
+        'encodings',
+    ],
     hookspath=[],
-    runtime_hooks=[runtime_hook_path],  # Use our custom runtime hook
+    hooksconfig={},
+    runtime_hooks=[
+        # Custom runtime hook to set Qt plugin path
+        'rthook_pyside6_qtplugins.py',
+    ],
     excludedimports=[
-        'matplotlib',
-        'numpy',
-        'pandas',
-        'scipy',
-        'tkinter',
+        # Explicitly exclude conflicting Qt bindings
         'PyQt5',
         'PyQt6',
         'PySide2',
-        'IPython',
-        'jupyter',
     ],
     win_no_prefer_redirects=False,
-    win_private_assemblies=True,
-    cipher=block_cipher,
+    win_private_assemblies=False,
     noarchive=False,
 )
 
-# === PYZ (Python archive) ===
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+# ============================================================================
+# Build EXE (onedir mode - better for debugging)
+# ============================================================================
 
-# === EXE (Executable) ===
+pyz = PYZ(
+    a.pure,
+    a.zipped_data,
+    cipher=None,
+)
+
 exe = EXE(
     pyz,
     a.scripts,
     [],
     exclude_binaries=True,
-    name='AcadHack',
+    name='app_webview',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=False,
-    console=False,  # No console window for GUI app
+    upx=True,
+    upx_exclude=[
+        # DO NOT compress Qt platform plugin DLLs
+        'qwindows.dll',
+        'qwindowsvistastyle.dll',
+    ],
+    console=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
 )
 
-# === COLLECTION (OneDir bundle) ===
-# OneDir is required for PySide6 because plugins must be in subdirectories
+# ============================================================================
+# Collect all generated files into dist directory
+# ============================================================================
+
 coll = COLLECT(
     exe,
     a.binaries,
     a.zipfiles,
     a.datas,
     strip=False,
-    upx=False,
-    upx_exclude=[],
-    name='AcadHack',  # Output folder name in dist/
+    upx=True,
+    upx_exclude=[
+        'qwindows.dll',
+        'qwindowsvistastyle.dll',
+    ],
+    name='app_webview',
 )
