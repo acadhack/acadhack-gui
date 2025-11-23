@@ -118,6 +118,8 @@ class WindowsBuilder:
             '--noconfirm',
             f'--add-data={web_source}{sep}web',
             f'--runtime-hook={self.runtime_hook}',
+            # Force old onedir layout (no _internal folder)
+            '--contents-directory=.',
             # Exclude unnecessary modules to save space/time
             '--exclude-module=tkinter',
             '--exclude-module=matplotlib',
@@ -129,6 +131,13 @@ class WindowsBuilder:
         try:
             # Run PyInstaller directly
             PyInstaller.__main__.run(args)
+            
+            # MANUAL FALLBACK: Ensure web folder exists
+            dist_web_path = self.dist_dir / 'app_webview' / 'web'
+            if not dist_web_path.exists():
+                self.log("[!] Web folder missing after build. Performing manual copy...", 'WARNING')
+                shutil.copytree(web_source, dist_web_path)
+                self.log("[+] Manual copy successful")
             
             self.log("[+] PyInstaller build completed")
             return True
