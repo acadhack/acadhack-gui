@@ -1,30 +1,43 @@
 # -*- mode: python ; coding: utf-8 -*-
 import sys
 import os
-from PyInstaller.utils.hooks import get_module_file_path
+import importlib.util
 
 block_cipher = None
 
+# Helper to find package paths
+def get_package_path(package_name):
+    try:
+        spec = importlib.util.find_spec(package_name)
+        if spec and spec.origin:
+            return os.path.dirname(spec.origin)
+    except Exception:
+        pass
+    return None
+
 # Get PySide6 path for Qt plugins
-try:
-    pyside6_path = get_module_file_path('PySide6')
-    pyside6_binaries = [
-        (os.path.join(pyside6_path, 'plugins', 'platforms'), 
-         os.path.join('PySide6', 'plugins', 'platforms')),
-    ]
-except Exception:
-    pyside6_binaries = []
+pyside6_path = get_package_path('PySide6')
+pyside6_binaries = []
+if pyside6_path:
+    # Add qwindows.dll platform plugin (Windows only)
+    qwindows_path = os.path.join(pyside6_path, 'plugins', 'platforms', 'qwindows.dll')
+    if os.path.exists(qwindows_path):
+        pyside6_binaries.append((qwindows_path, 'platforms'))
 
 # Get shiboken6 path
-try:
-    shiboken6_path = get_module_file_path('shiboken6')
-    # Some versions have DLLs in the root, some in a subfolder. 
-    # We try to grab the package root.
-    shiboken6_binaries = [
-        (os.path.dirname(shiboken6_path), 'shiboken6')
+shiboken6_path = get_package_path('shiboken6')
+shiboken6_binaries = []
+if shiboken6_path:
+    # Add shiboken6 runtime DLL
+    # Try different possible locations/names
+    candidates = [
+        os.path.join(shiboken6_path, 'shiboken6.abi3.dll'),
+        os.path.join(shiboken6_path, 'shiboken6.dll'),
     ]
-except Exception:
-    shiboken6_binaries = []
+    for dll in candidates:
+        if os.path.exists(dll):
+            shiboken6_binaries.append((dll, '.'))
+            break
 
 a = Analysis(
     ['app_webview.py'],
