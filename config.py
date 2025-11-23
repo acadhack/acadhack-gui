@@ -25,7 +25,10 @@ API_RATE_LIMIT_INTERVAL = 2.0  # seconds
 THEME = "dark"  # Default theme
 
 # Load overrides from config.json if it exists
-_base_dir = os.path.dirname(os.path.abspath(__file__))
+if getattr(sys, 'frozen', False):
+    _base_dir = os.path.dirname(sys.executable)
+else:
+    _base_dir = os.path.dirname(os.path.abspath(__file__))
 _config_json_path = os.path.join(_base_dir, "config.json")
 
 if os.path.exists(_config_json_path):

@@ -25,7 +25,13 @@ api = None
 window = None
 
 # Define web folder path
-WEB_FOLDER = os.path.abspath("web")
+# Determine if we are running in a frozen (PyInstaller) bundle
+if getattr(sys, 'frozen', False):
+    # In a frozen app, bundled data is in sys._MEIPASS
+    WEB_FOLDER = os.path.join(sys._MEIPASS, 'web')
+else:
+    # Normal development mode
+    WEB_FOLDER = os.path.abspath("web")
 
 class Api:
     """Bridge object exposed to JavaScript as window.pywebview.api."""

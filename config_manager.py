@@ -22,7 +22,10 @@ class ConfigManager:
 
     def __init__(self, config_path: str | None = None) -> None:
         if config_path is None:
-            base_dir = os.path.dirname(os.path.abspath(__file__))
+            if getattr(sys, 'frozen', False):
+                base_dir = os.path.dirname(sys.executable)
+            else:
+                base_dir = os.path.dirname(os.path.abspath(__file__))
             config_path = os.path.join(base_dir, "config.json")
         self.config_path = config_path
 

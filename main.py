@@ -73,7 +73,13 @@ class AutomationController:
         
         # Persistent User Data Directory
         # This saves cookies/login state to a local folder named 'chrome_data'
-        user_data_dir = os.path.join(os.getcwd(), "chrome_data")
+        # Determine base path for user data
+        if getattr(sys, 'frozen', False):
+            base_path = os.path.dirname(sys.executable)
+        else:
+            base_path = os.getcwd()
+
+        user_data_dir = os.path.join(base_path, "chrome_data")
         chrome_options.add_argument(f"user-data-dir={user_data_dir}")
         
         # Add any desired Chrome options here (e.g., headless).
