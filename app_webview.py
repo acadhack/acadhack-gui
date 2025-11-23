@@ -13,6 +13,24 @@ from importlib import reload
 from main import AutomationController
 from config_manager import ConfigManager
 import config
+import sys
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        if getattr(sys, 'frozen', False):
+            # In onedir mode with manual copy, assets are next to the executable
+            base_path = os.path.dirname(sys.executable)
+        else:
+            base_path = os.path.abspath(".")
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+# Use the helper to get the correct path
+WEB_FOLDER = resource_path('web')
 
 # --- ARCHITECT OPTIMIZATION: FORCE HARDWARE ACCELERATION ---
 # These flags ensure QtWebEngine (Chromium) uses the GPU for

@@ -111,13 +111,14 @@ class WindowsBuilder:
         # Arguments for PyInstaller
         args = [
             str(self.root_dir / 'app_webview.py'),
-            '--name=app_webview',
+            '--name=AcadHack',
             '--onedir',
             '--windowed',
             '--clean',
             '--noconfirm',
             f'--add-data={web_source}{sep}web',
             f'--runtime-hook={self.runtime_hook}',
+            '--icon=logo-dark.ico',
             # Force old onedir layout (no _internal folder)
             '--contents-directory=.',
             # Exclude unnecessary modules to save space/time
@@ -133,7 +134,7 @@ class WindowsBuilder:
             PyInstaller.__main__.run(args)
             
             # MANUAL FALLBACK: Ensure web folder exists
-            dist_web_path = self.dist_dir / 'app_webview' / 'web'
+            dist_web_path = self.dist_dir / 'AcadHack' / 'web'
             if not dist_web_path.exists():
                 self.log("[!] Web folder missing after build. Performing manual copy...", 'WARNING')
                 shutil.copytree(web_source, dist_web_path)
@@ -149,24 +150,24 @@ class WindowsBuilder:
         """Verify that the build was successful"""
         self.log("Verifying build output...")
         
-        exe_path = self.dist_dir / 'app_webview' / 'app_webview.exe'
+        exe_path = self.dist_dir / 'AcadHack' / 'AcadHack.exe'
         if not exe_path.exists():
             self.log(f"ERROR: Expected executable not found at {exe_path}", 'ERROR')
             return False
         
-        web_path = self.dist_dir / 'app_webview' / 'web'
+        web_path = self.dist_dir / 'AcadHack' / 'web'
         if not web_path.is_dir():
             self.log(f"ERROR: web/ folder not bundled correctly", 'ERROR')
-            self.log(f"Contents of {self.dist_dir / 'app_webview'}:", 'ERROR')
+            self.log(f"Contents of {self.dist_dir / 'AcadHack'}:", 'ERROR')
             try:
-                for item in (self.dist_dir / 'app_webview').iterdir():
+                for item in (self.dist_dir / 'AcadHack').iterdir():
                     self.log(f"  - {item.name}", 'ERROR')
             except Exception as e:
                 self.log(f"  Failed to list directory: {e}", 'ERROR')
             return False
         
         # Check for critical Qt plugin
-        plugins_dir = self.dist_dir / 'app_webview' / 'PySide6' / 'plugins' / 'platforms'
+        plugins_dir = self.dist_dir / 'AcadHack' / 'PySide6' / 'plugins' / 'platforms'
         if not plugins_dir.exists():
             self.log(f"WARNING: Qt plugins directory not found at expected location", 'WARNING')
             # PyInstaller onedir might put it elsewhere, so just warn
@@ -181,8 +182,8 @@ class WindowsBuilder:
         print("BUILD SUMMARY")
         print("="*70)
         
-        exe_path = self.dist_dir / 'app_webview' / 'app_webview.exe'
-        app_dir = self.dist_dir / 'app_webview'
+        exe_path = self.dist_dir / 'AcadHack' / 'AcadHack.exe'
+        app_dir = self.dist_dir / 'AcadHack'
         
         if exe_path.exists():
             # Get file size
@@ -193,7 +194,7 @@ class WindowsBuilder:
             print(f"Size: {size_mb:.2f} MB")
             print(f"\nTo run the application:")
             print(f"  cd {app_dir}")
-            print(f"  .\\app_webview.exe")
+            print(f"  .\\AcadHack.exe")
             return True
         else:
             print(f"[!] FAILED: Build did not produce expected output")

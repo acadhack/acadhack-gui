@@ -70,19 +70,19 @@ jobs:
       - name: Verify build output
         run: |
           echo "Verifying build output..."
-          if (-not (Test-Path "dist/app_webview/app_webview.exe")) {
+          if (-not (Test-Path "dist/AcadHack/AcadHack.exe")) {
             echo "ERROR: Executable not found"
             exit 1
           }
-          if (-not (Test-Path "dist/app_webview/web")) {
+          if (-not (Test-Path "dist/AcadHack/web")) {
             echo "ERROR: web folder not found"
             exit 1
           }
           echo "[+] Build verification passed"
           echo "Executable info:"
-          Get-Item "dist/app_webview/app_webview.exe" | Select-Object FullName, Length
-          echo "Contents of dist/app_webview:"
-          Get-ChildItem "dist/app_webview" -Recurse | Select-Object FullName | Select-Object -First 50
+          Get-Item "dist/AcadHack/AcadHack.exe" | Select-Object FullName, Length
+          echo "Contents of dist/AcadHack:"
+          Get-ChildItem "dist/AcadHack" -Recurse | Select-Object FullName | Select-Object -First 50
       
       - name: Debug - List Dist Content
         shell: cmd
@@ -94,8 +94,8 @@ jobs:
         uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: app_webview-windows
-          path: dist/app_webview/
+          name: AcadHack-windows
+          path: dist/AcadHack/
           retention-days: 30
           compression-level: 6
       
@@ -103,7 +103,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/app_webview/**
+          files: dist/AcadHack/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -113,11 +113,11 @@ jobs:
           echo "======================================="
           echo "BUILD SUMMARY"
           echo "======================================="
-          if (Test-Path "dist/app_webview/app_webview.exe") {
+          if (Test-Path "dist/AcadHack/AcadHack.exe") {
             echo "[+] Build Status: SUCCESS"
-            $fileSize = (Get-Item "dist/app_webview/app_webview.exe").Length / 1MB
+            $fileSize = (Get-Item "dist/AcadHack/AcadHack.exe").Length / 1MB
             echo "[+] Executable Size: $($fileSize.ToString('F2')) MB"
-            echo "[+] Output: dist/app_webview/"
+            echo "[+] Output: dist/AcadHack/"
             echo ""
             echo "Artifact ready for download from GitHub Actions"
           } else {
