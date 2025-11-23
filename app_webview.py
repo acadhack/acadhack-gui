@@ -5,15 +5,19 @@ Main entry point for the AcadHack desktop application.
 """
 
 import os
+import sys # Moved sys import up for platform check
 import threading
 import queue
+# Set QT_OPENGL to software on Windows to fix CSS/rendering glitches
+if sys.platform == 'win32':
+    os.environ["QT_OPENGL"] = "software"
 import webview
 from importlib import reload
 
 from main import AutomationController
 from config_manager import ConfigManager
 import config
-import sys
+
 
 # --- ARCHITECT OPTIMIZATION: FORCE HARDWARE ACCELERATION ---
 # These flags ensure QtWebEngine (Chromium) uses the GPU for

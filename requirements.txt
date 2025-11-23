@@ -21,3 +21,6 @@ packaging
 # Linux Specific (Environment Markers)
 PyGObject; sys_platform == 'linux'
 pycairo; sys_platform == 'linux'
+
+# Windows Specific
+pywin32; sys_platform == 'win32'
