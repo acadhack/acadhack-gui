@@ -40,7 +40,7 @@ a = Analysis(
     binaries=[],
     datas=[
         # CRITICAL: Add web folder as data (destination must be relative path)
-        (web_folder, web_folder),
+        (os.path.join(spec_dir, web_folder), web_folder),
         # Collect PySide6 data files (plugins, translations)
         *collect_data_files('PySide6'),
     ],

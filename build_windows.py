@@ -129,6 +129,12 @@ class WindowsBuilder:
         web_path = self.dist_dir / 'app_webview' / 'web'
         if not web_path.is_dir():
             self.log(f"ERROR: web/ folder not bundled correctly", 'ERROR')
+            self.log(f"Contents of {self.dist_dir / 'app_webview'}:", 'ERROR')
+            try:
+                for item in (self.dist_dir / 'app_webview').iterdir():
+                    self.log(f"  - {item.name}", 'ERROR')
+            except Exception as e:
+                self.log(f"  Failed to list directory: {e}", 'ERROR')
             return False
         
         # Check for critical Qt plugin
