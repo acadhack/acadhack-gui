@@ -22,7 +22,7 @@ def build():
         PyInstaller.__main__.run([
             spec_file,
             '--distpath', os.path.join(base_dir, 'dist'),
-            '--buildpath', os.path.join(base_dir, 'build'),
+            '--workpath', os.path.join(base_dir, 'build'),
             '--specpath', base_dir,
             '--clean',
             '--noconfirm',
