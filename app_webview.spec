@@ -15,7 +15,6 @@ Key fixes applied:
 
 import os
 import sys
-from PyInstaller.utils.hooks import collect_data_files
 
 # Get current working directory (use this, NOT __file__)
 spec_dir = os.getcwd()
@@ -24,11 +23,18 @@ spec_dir = os.getcwd()
 app_entry_point = 'app_webview.py'
 web_folder = 'web'
 
-# Verify paths exist
+# Build absolute path for web folder
+web_folder_abs = os.path.join(spec_dir, web_folder)
+
+# Verify paths exist and print for debugging
 if not os.path.exists(app_entry_point):
     raise FileNotFoundError(f"Entry point not found: {app_entry_point}")
-if not os.path.isdir(web_folder):
-    raise FileNotFoundError(f"Web folder not found: {web_folder}")
+if not os.path.isdir(web_folder_abs):
+    raise FileNotFoundError(f"Web folder not found: {web_folder_abs}")
+
+print(f"[SPEC] spec_dir: {spec_dir}")
+print(f"[SPEC] web_folder_abs: {web_folder_abs}")
+print(f"[SPEC] web folder exists: {os.path.isdir(web_folder_abs)}")
 
 # ============================================================================
 # PyInstaller Analysis Configuration
@@ -39,10 +45,8 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        # CRITICAL: Add web folder as data (destination must be relative path)
-        (os.path.join(spec_dir, web_folder), web_folder),
-        # Collect PySide6 data files (plugins, translations)
-        *collect_data_files('PySide6'),
+        # CRITICAL: Add web folder as data with absolute source path
+        (web_folder_abs, web_folder),
     ],
     hiddenimports=[
         # PySide6/Qt core modules
