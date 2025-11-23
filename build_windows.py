@@ -125,6 +125,11 @@ class WindowsBuilder:
             '--exclude-module=tkinter',
             '--exclude-module=matplotlib',
             '--exclude-module=numpy',
+            # Exclude pythonnet/WinForms dependencies to prevent crashes
+            '--exclude-module=pythonnet',
+            '--exclude-module=clr',
+            '--exclude-module=clr_loader',
+            '--exclude-module=System',
         ]
         
         self.log(f"PyInstaller arguments: {args}")
