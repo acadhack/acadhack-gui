@@ -103,6 +103,11 @@ class WindowsBuilder:
         self.log("Running PyInstaller...")
         
         import PyInstaller.__main__
+        from PyInstaller.utils.hooks import collect_all
+        
+        # Collect all PySide6 dependencies (binaries, datas, hidden imports)
+        # This ensures plugins (like platforms/qwindows.dll) are included.
+        pyside6_datas, pyside6_binaries, pyside6_hiddenimports = collect_all('PySide6')
         
         # Define paths
         web_source = self.root_dir / 'web'
@@ -130,7 +135,21 @@ class WindowsBuilder:
             '--exclude-module=clr',
             '--exclude-module=clr_loader',
             '--exclude-module=System',
+            # Explicit hidden imports for pywebview's qt backend
+            '--hidden-import=pywebview.guis.qt',
         ]
+        
+        # Add collected PySide6 hidden imports
+        for module in pyside6_hiddenimports:
+            args.append(f'--hidden-import={module}')
+
+        # Add collected PySide6 data files
+        for source, dest in pyside6_datas:
+            args.append(f'--add-data={source}{sep}{dest}')
+
+        # Add collected PySide6 binaries (DLLs)
+        for source, dest in pyside6_binaries:
+            args.append(f'--add-binary={source}{sep}{dest}')
         
         self.log(f"PyInstaller arguments: {args}")
         
