@@ -51,7 +51,7 @@ jobs:
           echo "Installing from requirements_windows.txt..."
           python -m pip install -r requirements_windows.txt
           echo "PyInstaller version:"
-          pyinstaller --version
+          python -m PyInstaller --version
       
       - name: Build Windows executable
         run: |
