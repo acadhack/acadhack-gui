@@ -21,8 +21,8 @@ if not exist "%VENV_DIR%" (
     call "%VENV_DIR%\Scripts\activate.bat"
     python -m pip install --upgrade pip
     
-    :: Install requirements using the Windows-specific file
-    pip install -r requirements_windows.txt
+    :: Install requirements (unified file)
+    pip install -r requirements.txt
     if %errorlevel% neq 0 (
         echo.
         echo [WARNING] Some dependencies failed to install. 

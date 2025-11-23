@@ -167,6 +167,20 @@ class Api:
         self.log_queue.put("[INFO] Stop signal sent to automation loop.")
         self.is_running = False
 
+    # ------------------------------------------------------------------ #
+    # Clipboard Utilities                                                #
+    # ------------------------------------------------------------------ #
+
+    def copy_to_clipboard(self, text):
+        """Called by JS to copy text to system clipboard."""
+        try:
+            from PySide6.QtGui import QGuiApplication
+            clipboard = QGuiApplication.clipboard()
+            clipboard.setText(text)
+            return {"status": "success"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
 
 def _js_escape(text: str) -> str:
     """Escapes strings to be safely embedded in a JS function call."""

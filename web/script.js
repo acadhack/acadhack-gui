@@ -59,13 +59,24 @@ btnClearLog.addEventListener('click', () => {
 
 // Copy Log
 if (btnCopyLog) {
-    btnCopyLog.addEventListener('click', () => {
+    btnCopyLog.addEventListener('click', async () => {
         if (!logContainer) return;
         const text = logContainer.innerText;
 
-        // QtWebEngine has a bug with navigator.clipboard permissions,
-        // so we use the fallback 'execCommand' method directly.
-        useFallback();
+        try {
+            // Use Python API for reliable clipboard access on Windows
+            const response = await window.pywebview.api.copy_to_clipboard(text);
+
+            if (response && response.status === 'success') {
+                showCopied();
+            } else {
+                console.error('Clipboard error:', response?.message);
+                append_log('[ERROR] Failed to copy log.');
+            }
+        } catch (e) {
+            console.error('Error calling copy_to_clipboard:', e);
+            append_log('[ERROR] Backend communication failed.');
+        }
 
         function showCopied() {
             const originalText = btnCopyLog.textContent;
@@ -73,23 +84,6 @@ if (btnCopyLog) {
             setTimeout(() => {
                 btnCopyLog.textContent = originalText;
             }, 1500);
-        }
-
-        function useFallback() {
-            try {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed'; // Avoid scrolling to bottom
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                showCopied();
-            } catch (err) {
-                console.error('Failed to copy log via fallback:', err);
-                append_log('[ERROR] Failed to copy log to clipboard.');
-            }
         }
     });
 }
