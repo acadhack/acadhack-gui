@@ -45,7 +45,7 @@ a = Analysis(
     binaries=pyside6_binaries + shiboken6_binaries,
     datas=[
         ('web', 'web'),
-        ('assets', 'assets'),
+
     ],
     hiddenimports=[
         # PyWebView
