@@ -14,125 +14,18 @@ from main import AutomationController
 from config_manager import ConfigManager
 import config
 import sys
-import traceback
-
-# --- DEBUG LOGGING SETUP ---
-# Write startup errors to a file since we can't see the console
-debug_log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "startup_debug.txt")
-if getattr(sys, 'frozen', False):
-    debug_log_path = os.path.join(os.path.dirname(sys.executable), "startup_debug.txt")
-
-def log_debug(msg):
-    try:
-        with open(debug_log_path, "a", encoding="utf-8") as f:
-            f.write(f"{msg}\n")
-    except Exception:
-        pass
-
-log_debug("--- APP STARTUP ---")
-log_debug(f"Python version: {sys.version}")
-log_debug(f"Executable: {sys.executable}")
-
-def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        if getattr(sys, 'frozen', False):
-            # In onedir mode with manual copy, assets are next to the executable
-            base_path = os.path.dirname(sys.executable)
-        else:
-            base_path = os.path.abspath(".")
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)
-
-# Use the helper to get the correct path
-WEB_FOLDER = resource_path('web')
-log_debug(f"WEB_FOLDER resolved to: {WEB_FOLDER}")
-
-# --- EXPLICIT QT IMPORT CHECK ---
-try:
-    log_debug("Attempting to import PySide6...")
-    import PySide6
-    log_debug(f"PySide6 imported. Version: {PySide6.__version__}")
-    
-    log_debug("Attempting to import PySide6.QtCore...")
-    from PySide6 import QtCore
-    log_debug(f"QtCore imported. Path: {QtCore.__file__}")
-    
-    log_debug("Attempting to import PySide6.QtWidgets...")
-    from PySide6 import QtWidgets
-    log_debug("QtWidgets imported.")
-    
-    log_debug("Attempting to import PySide6.QtWebEngineWidgets...")
-    from PySide6 import QtWebEngineWidgets
-    log_debug("QtWebEngineWidgets imported.")
-    
-    # Check plugins
-    import PySide6.QtGui
-    plugin_path = os.environ.get('QT_PLUGIN_PATH', 'Not Set')
-    platform_plugin_path = os.environ.get('QT_QPA_PLATFORM_PLUGIN_PATH', 'Not Set')
-    
-    log_debug(f"QT_PLUGIN_PATH env: {plugin_path}")
-    log_debug(f"QT_QPA_PLATFORM_PLUGIN_PATH env: {platform_plugin_path}")
-
-    # VERIFY PLUGIN FILES
-    if os.path.exists(platform_plugin_path):
-        try:
-            files = os.listdir(platform_plugin_path)
-            log_debug(f"Contents of platforms dir: {files}")
-        except Exception as e:
-            log_debug(f"Could not list platforms dir: {e}")
-    else:
-        log_debug("WARNING: Platforms dir does not exist!")
-
-    # DEEP DIAGNOSTIC: Try to create QApplication manually
-    # This will throw the specific error if the platform plugin is missing/broken
-    log_debug("Attempting to create QApplication manually...")
-    app = QtWidgets.QApplication.instance()
-    if app is None:
-        app = QtWidgets.QApplication(sys.argv)
-    log_debug("QApplication created successfully!")
-    
-except Exception as e:
-    log_debug(f"CRITICAL ERROR initializing Qt: {e}")
-    log_debug(traceback.format_exc())
-    # We don't exit here, we let pywebview try (and likely fail), but now we have logs.
-
-# --- ARCHITECT OPTIMIZATION: FORCE HARDWARE ACCELERATION ---
 
 # --- ARCHITECT OPTIMIZATION: FORCE HARDWARE ACCELERATION ---
 # These flags ensure QtWebEngine (Chromium) uses the GPU for
 # CSS animations, fixing the "choppy" rendering on Linux.
 os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--enable-gpu-rasterization --ignore-gpu-blocklist --enable-zero-copy"
 
-def setup_frozen_environment():
-    """Configure environment for PyInstaller frozen executables."""
-    if getattr(sys, 'frozen', False):
-        base_dir = sys._MEIPASS
-        
-        # Set Qt plugin path
-        qt_plugin_path = os.path.join(base_dir, 'PySide6', 'plugins')
-        
-        # Try _internal subdirectory (OneDir mode)
-        if not os.path.exists(qt_plugin_path):
-            qt_plugin_path = os.path.join(base_dir, '_internal', 'PySide6', 'plugins')
-            
-        if os.path.exists(qt_plugin_path):
-            os.environ['QT_PLUGIN_PATH'] = qt_plugin_path
-            print(f"Qt plugin path set to: {qt_plugin_path}")
-        
-        return base_dir
-    return os.path.dirname(os.path.abspath(__file__))
-
-# Setup environment before importing webview
-base_path = setup_frozen_environment()
-
 # Global references used by the poller and closing handler
 api = None
 window = None
 
+# Define web folder path
+WEB_FOLDER = os.path.abspath("web")
 
 class Api:
     """Bridge object exposed to JavaScript as window.pywebview.api."""
@@ -351,7 +244,6 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Failed to create default config: {e}")
 
-    # base_dir = os.path.dirname(os.path.abspath(__file__)) # This line is no longer needed
     index_path = os.path.join(WEB_FOLDER, "index.html")
 
     window = webview.create_window(
