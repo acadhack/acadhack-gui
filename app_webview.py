@@ -197,10 +197,62 @@ class Api:
     def copy_to_clipboard(self, text):
         """Called by JS to copy text to system clipboard."""
         try:
-            from PySide6.QtGui import QGuiApplication
-            clipboard = QGuiApplication.clipboard()
-            clipboard.setText(text)
-            return {"status": "success"}
+            if sys.platform == 'win32':
+                # Windows: Use ctypes to call user32.dll directly.
+                # This bypasses OLE/COM entirely, avoiding "OleSetClipboard" errors.
+                import ctypes
+                from ctypes import wintypes
+                import time
+
+                user32 = ctypes.windll.user32
+                kernel32 = ctypes.windll.kernel32
+
+                CF_UNICODETEXT = 13
+                GMEM_MOVEABLE = 0x0002
+                
+                # Retry logic for OpenClipboard (in case it's locked)
+                success = False
+                for _ in range(5):
+                    if user32.OpenClipboard(None):
+                        success = True
+                        break
+                    time.sleep(0.1)
+                
+                if not success:
+                    return {"status": "error", "message": "Could not open clipboard"}
+
+                try:
+                    user32.EmptyClipboard()
+                    
+                    # Allocate global memory
+                    text_bytes = text.encode('utf-16le') + b'\x00\x00'
+                    h_mem = kernel32.GlobalAlloc(GMEM_MOVEABLE, len(text_bytes))
+                    if not h_mem:
+                        return {"status": "error", "message": "GlobalAlloc failed"}
+                    
+                    # Lock memory and copy data
+                    p_mem = kernel32.GlobalLock(h_mem)
+                    if not p_mem:
+                        return {"status": "error", "message": "GlobalLock failed"}
+                    
+                    ctypes.memmove(p_mem, text_bytes, len(text_bytes))
+                    kernel32.GlobalUnlock(h_mem)
+                    
+                    # Set clipboard data
+                    if not user32.SetClipboardData(CF_UNICODETEXT, h_mem):
+                        return {"status": "error", "message": "SetClipboardData failed"}
+                        
+                    # h_mem is now owned by the clipboard, so we don't free it
+                finally:
+                    user32.CloseClipboard()
+                    
+                return {"status": "success"}
+            else:
+                # Linux/macOS: Use Qt's clipboard (works reliably there)
+                from PySide6.QtGui import QGuiApplication
+                clipboard = QGuiApplication.clipboard()
+                clipboard.setText(text)
+                return {"status": "success"}
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
