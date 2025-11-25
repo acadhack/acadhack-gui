@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
-![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)
+![Platform: Windows | Linux | macOS](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue.svg)
 
 **AcadHack** is an advanced, AI-powered automation tool designed to assist students with online quizzes on the Acadally platform. It leverages the power of **Google Gemini** to analyze questions and automatically select the correct answers, all wrapped in a modern, user-friendly desktop application.
 
@@ -26,15 +26,17 @@ Detailed documentation is available in the **[Wiki](https://github.com/acadhack/
 
 ## 📥 Installation
 
-### Option 1: Pre-built Executable (Recommended)
-1.  Go to the **[Latest Release](../../releases/latest)** page.
-2.  Download the `AcadHack.exe`.
+### Option 1: Pre-built Executable (Windows Only)
+1.  Go to the **[Releases](../../releases)** page.
+2.  Download the latest `AcadHack.exe`.
 3.  Run the executable.
 
-### Option 2: Run from Source
+### Option 2: Run from Source (Windows, Linux, macOS)
 1.  Clone the repository.
 2.  Install dependencies: `pip install -r requirements.txt`
-3.  Run the app: `python app_webview.py`
+3.  Run the app:
+    *   **Windows**: `python app_webview.py`
+    *   **Linux/macOS**: `./run_linux.sh` (or `python app_webview.py`)
 
 ## ⚠️ Disclaimer & Legal
 
