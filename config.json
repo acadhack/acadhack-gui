@@ -1,5 +1,5 @@
 {
-    "API_KEY": "API_KEY_HERE",
+    "API_KEY": "AIzaSyD3e0ecWLr726AqQgLsWJVgYz76RKsTc90",
     "GEMINI_MODEL_NAME": "gemini-2.5-flash",
     "API_RATE_LIMIT_INTERVAL": 3.0,
     "STEALTH_ENABLED": false,
