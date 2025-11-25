@@ -1,44 +1,47 @@
-# 💻 AcadHack GUI (Windows Desktop Application) [WIP]
+# AcadHack GUI 💻
 
-AcadHack GUI is the final, user-friendly desktop application designed for non-technical users on Windows. It provides a modern interface, real-time logging, and automatic setup for solving online quizzes using AI.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
+![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)
+
+**AcadHack** is an advanced, AI-powered automation tool designed to assist students with online quizzes on the Acadally platform. It leverages the power of **Google Gemini** to analyze questions and automatically select the correct answers, all wrapped in a modern, user-friendly desktop application.
 
 ## ✨ Key Features
 
-*   **Simple Interface:** Modern, two-pane design built with CustomTkinter.
-*   **One-Click Automation:** Automatically launches and manages its own Chrome browser session—no manual setup required.
-*   **Real-time Feedback:** Live log updates show the progress of solving each question.
-*   **Persistent Configuration:** Saves your Gemini API key and settings locally.
-*   **Robustness:** Uses `webdriver-manager` to ensure compatibility with all Chrome browser updates.
+*   **🤖 AI-Powered Solving**: Uses Google's Gemini Pro Vision (multimodal) to understand both text and image-based questions.
+*   **⚡ One-Click Automation**: Handles the entire browser lifecycle—launching, navigating, and solving—with a single click.
+*   **🎨 Modern UI**: A sleek, dark-themed interface built with CustomTkinter and web technologies, providing real-time feedback.
+*   **🕵️ Stealth Mode**: Mimics human behavior with randomized delays to avoid detection.
+*   **🚀 Booster Mode**: Specialized logic for rapid-fire "Booster" quizzes.
+*   **🔒 Secure**: Your API keys are stored locally on your machine.
 
-## 🏗 Architectural Overview
+## 📚 Documentation
 
-This application separates concerns using a standard desktop architecture pattern:
+Detailed documentation is available in the **[Wiki](https://github.com/acadhack/acadhack-gui/wiki)**:
 
-*   **Frontend (Main Thread):** `app_gui.py` handles the CustomTkinter interface, user input, and logging display.
-*   **Backend (Worker Thread):** `main.py` (containing the `AutomationController` class) runs the long-running Selenium tasks, ensuring the GUI never freezes.
-*   **Communication:** Utilizes Python's `threading` and `queue` for thread-safe logging and control.
+*   [Quickstart Guide](https://github.com/acadhack/acadhack-gui/wiki/Quickstart)
+*   [How It Works](https://github.com/acadhack/acadhack-gui/wiki/How-It-Works)
+*   [Configuration](https://github.com/acadhack/acadhack-gui/wiki/Configuration)
+*   [Advanced Usage](https://github.com/acadhack/acadhack-gui/wiki/Advanced)
 
-## Installation (Windows)
+## 📥 Installation
 
-The simplest way to run AcadHack is using the pre-packaged executable:
+### Option 1: Pre-built Executable (Recommended)
+1.  Go to the **[Releases](../../releases)** page.
+2.  Download the latest `AcadHack.exe`.
+3.  Run the executable.
 
-1.  Download the latest `AcadHack.exe` from the [Releases page].
-2.  Run the executable.
-3.  Enter your Gemini API Key in the settings panel and click "Save."
-4.  Navigate to your quiz page in the opened Chrome browser and click "START."
+### Option 2: Run from Source
+1.  Clone the repository.
+2.  Install dependencies: `pip install -r requirements.txt`
+3.  Run the app: `python app_webview.py`
 
-## 📚 Core Components
+## ⚠️ Disclaimer & Legal
 
-| File | Role |
-| :--- | :--- |
-| `app_gui.py` | The CustomTkinter graphical interface and thread manager. |
-| `main.py` | Contains the `AutomationController` (the automation engine). |
-| `config_manager.py` | Handles reading and writing persistent settings to `config.py`. |
-| `scraper.py` / `gemini_solver.py` | Core reusable logic for web interaction and AI solving. |
+> **Disclaimer**: AcadHack is **not affiliated** with Acadally in any way. This tool is developed for **educational purposes only** to demonstrate the capabilities of AI in web automation.
 
-## Development and Contribution
+The authors are not responsible for any misuse of this tool. Please use responsibly and ethically.
 
-If you wish to run from source, ensure you install all dependencies:
-`pip install customtkinter selenium webdriver-manager google-generativeai`
+## 📄 License
 
-We welcome contributions focused on improving the GUI, UX, and the configuration management features.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
