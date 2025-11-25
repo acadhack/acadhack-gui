@@ -8,7 +8,7 @@
 
 ## ✨ Key Features
 
-*   **🤖 AI-Powered Solving**: Uses Google's Gemini Pro Vision (multimodal) to understand both text and image-based questions.
+*   **🤖 AI-Powered Solving**: Uses Google's Gemini AI LLM family to understand both text and image-based questions.
 *   **⚡ One-Click Automation**: Handles the entire browser lifecycle—launching, navigating, and solving—with a single click.
 *   **🎨 Modern UI**: A sleek, dark-themed interface built with CustomTkinter and web technologies, providing real-time feedback.
 *   **🕵️ Stealth Mode**: Mimics human behavior with randomized delays to avoid detection.
