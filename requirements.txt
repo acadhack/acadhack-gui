@@ -6,9 +6,7 @@ webdriver-manager
 QtPy
 
 # Google Gemini / AI
-google-generativeai
-google-ai-generativelanguage
-google-api-core
+google-genai
 google-auth
 
 # Utilities

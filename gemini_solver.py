@@ -1,14 +1,15 @@
 """
 gemini_solver.py
 
-The AI brain for AcadHack, powered by Google Gemini.
+The AI brain for AcadHack, powered by Google Gemini (via google-genai SDK).
 """
 
 import time
 import re
 from typing import Any, Dict, List, Union
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 
 class GeminiSolver:
@@ -32,20 +33,17 @@ class GeminiSolver:
         self._last_request_time = 0.0
 
         # Configure the Gemini client
-        genai.configure(api_key=self.api_key)
+        self.client = genai.Client(api_key=self.api_key)
 
         # System instruction: be strict about the format
-        self.model = genai.GenerativeModel(
-            model_name=self.model_name,
-            system_instruction=(
-                "You are an expert at solving multiple-choice questions.\n"
-                "You will be given one question and up to four options labeled A, B, C, and D.\n"
-                "Carefully analyze any text and images.\n"
-                "Your entire reply MUST be exactly one single capital letter: A, B, C, or D.\n"
-                "Do not include any explanations, punctuation, or extra characters.\n"
-                "IMPORTANT: Mathematical expressions may be provided in LaTeX format "
-                "(e.g., x^{2}). Interpret this syntax correctly."
-            ),
+        self.system_instruction = (
+            "You are an expert at solving multiple-choice questions.\n"
+            "You will be given one question and up to four options labeled A, B, C, and D.\n"
+            "Carefully analyze any text and images.\n"
+            "Your entire reply MUST be exactly one single capital letter: A, B, C, or D.\n"
+            "Do not include any explanations, punctuation, or extra characters.\n"
+            "IMPORTANT: Mathematical expressions may be provided in LaTeX format "
+            "(e.g., x^{2}). Interpret this syntax correctly."
         )
 
     def _enforce_rate_limit(self) -> None:
@@ -75,10 +73,8 @@ class GeminiSolver:
 
         for item in items:
             if isinstance(item, bytes):
-                parts.append({
-                    "mime_type": "image/png",
-                    "data": item,
-                })
+                # The new SDK handles explicit image types or bytes
+                parts.append(types.Part.from_bytes(data=item, mime_type="image/png"))
             elif isinstance(item, str):
                 text = item.strip()
                 if text:
@@ -92,7 +88,7 @@ class GeminiSolver:
         """
         contents: List[Any] = []
 
-        # High-level instruction as user content (system instruction is separate)
+        # High-level instruction as user content
         contents.append(
             "You will receive one question and several answer options. "
             "Identify the single best answer and respond ONLY with its letter."
@@ -119,8 +115,7 @@ class GeminiSolver:
 
         return contents
 
-    @staticmethod
-    def _extract_letter(raw_text: str) -> str:
+    def _extract_letter(self, raw_text: str) -> str:
         """
         Extract the first capital letter A–D from the model's raw response.
         Fallback: default to 'A' if nothing suitable is found.
@@ -153,14 +148,22 @@ class GeminiSolver:
         contents = self._build_contents(quiz_data)
 
         try:
-            response = self.model.generate_content(contents)
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    system_instruction=self.system_instruction,
+                    temperature=0.0  # Deterministic specific answer
+                )
+            )
         except Exception as e:
             print(f"[GeminiSolver] Error calling Gemini API: {e}")
             # When in doubt, pick A—better to click something than crash
             answer = "A"
         else:
             self._last_request_time = time.time()
-            raw = getattr(response, "text", "") or ""
+            # New SDK response structure
+            raw = response.text if response.text else ""
             answer = self._extract_letter(raw)
 
         print(f"[GeminiSolver] Model chose answer: {answer}")

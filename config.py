@@ -21,7 +21,7 @@ import sys
 
 # Default values
 API_KEY = "YOUR_API_KEY_HERE"
-GEMINI_MODEL_NAME = "gemini-2.5-flash"
+GEMINI_MODEL_NAME = "gemini-3-flash-preview"
 API_RATE_LIMIT_INTERVAL = 2.0  # seconds
 THEME = "dark"  # Default theme
 
