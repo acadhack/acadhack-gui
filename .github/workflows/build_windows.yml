@@ -24,11 +24,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r acadhack-gui/requirements.txt
+        pip install -r requirements.txt
         pip install pyinstaller
 
     - name: Build with PyInstaller
-      working-directory: acadhack-gui
       run: |
         pyinstaller app_webview.spec
 
@@ -36,4 +35,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: AcadHack-Windows-v1.2.0
-        path: acadhack-gui/dist/AcadHack.exe
+        path: dist/AcadHack.exe
