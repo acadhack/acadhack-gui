@@ -13,6 +13,9 @@ const boosterToggle = document.getElementById('booster-toggle');
 const stealthOptionsDiv = document.getElementById('stealth-options');
 const minDelayInput = document.getElementById('min-delay');
 const maxDelayInput = document.getElementById('max-delay');
+const guessToggle = document.getElementById('guess-toggle');
+const guessOptionsDiv = document.getElementById('guess-options');
+const guessOptionInputs = document.getElementsByName('guess-option');
 
 // Buttons
 const btnSave = document.getElementById('btn-save-config');
@@ -45,14 +48,66 @@ btnTheme.addEventListener('click', async () => {
     await handleSaveClick(true); // Pass true to indicate silent save (optional, or just reuse logic)
 });
 
-// Stealth Toggle Animation
+// Mutual Exclusion Logic
 stealthToggle.addEventListener('change', () => {
+    updateStealthUI();
+    // If Stealth is ON, disable Guess
+    if (stealthToggle.checked) {
+        if (guessToggle.checked) {
+            guessToggle.checked = false;
+            guessOptionsDiv.classList.remove('active');
+        }
+        guessToggle.disabled = true;
+        guessToggle.parentElement.classList.add('opacity-50', 'cursor-not-allowed');
+    } else {
+        guessToggle.disabled = false;
+        guessToggle.parentElement.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+});
+
+if (guessToggle) {
+    guessToggle.addEventListener('change', () => {
+        if (guessToggle.checked) {
+            guessOptionsDiv.classList.add('active');
+
+            // If Guess is ON, disable Stealth
+            if (stealthToggle.checked) {
+                stealthToggle.checked = false;
+                updateStealthUI();
+            }
+            stealthToggle.disabled = true;
+            stealthToggle.parentElement.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            guessOptionsDiv.classList.remove('active');
+
+            stealthToggle.disabled = false;
+            stealthToggle.parentElement.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    });
+}
+
+function updateStealthUI() {
     if (stealthToggle.checked) {
         stealthOptionsDiv.classList.add('active');
     } else {
         stealthOptionsDiv.classList.remove('active');
     }
-});
+}
+
+function enforceMutualExclusion() {
+    if (stealthToggle.checked) {
+        guessToggle.disabled = true;
+        guessToggle.parentElement.classList.add('opacity-50', 'cursor-not-allowed');
+    } else if (guessToggle.checked) {
+        stealthToggle.disabled = true;
+        stealthToggle.parentElement.classList.add('opacity-50', 'cursor-not-allowed');
+    } else {
+        guessToggle.disabled = false;
+        stealthToggle.disabled = false;
+        guessToggle.parentElement.classList.remove('opacity-50', 'cursor-not-allowed');
+        stealthToggle.parentElement.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+}
 
 // Clear Log
 btnClearLog.addEventListener('click', () => {
@@ -161,6 +216,22 @@ function load_settings(settings) {
         }
     }
 
+    if (guessToggle) {
+        guessToggle.checked = !!settings.guessEnabled;
+        if (guessToggle.checked) {
+            guessOptionsDiv.classList.add('active');
+        } else {
+            guessOptionsDiv.classList.remove('active');
+        }
+    }
+
+    if (settings.guessOption) {
+        const selectedRadio = document.querySelector(`input[name="guess-option"][value="${settings.guessOption}"]`);
+        if (selectedRadio) {
+            selectedRadio.checked = true;
+        }
+    }
+
     if (boosterToggle) {
         boosterToggle.checked = !!settings.boosterEnabled;
     }
@@ -169,6 +240,8 @@ function load_settings(settings) {
     if (settings.THEME) {
         document.documentElement.setAttribute('data-theme', settings.THEME);
     }
+
+    enforceMutualExclusion();
 }
 
 // Called by Python when browser launches/closes
@@ -258,7 +331,8 @@ async function handleSaveClick() {
         stealthEnabled: !!stealthToggle?.checked,
         minDelaySeconds: parseFloat(minDelayInput?.value || '0') || 0,
         maxDelaySeconds: parseFloat(maxDelayInput?.value || '0') || 0,
-        maxDelaySeconds: parseFloat(maxDelayInput?.value || '0') || 0,
+        guessEnabled: !!guessToggle?.checked,
+        guessOption: Array.from(guessOptionInputs).find(r => r.checked)?.value || 'A',
         boosterEnabled: !!boosterToggle?.checked,
         THEME: document.documentElement.getAttribute('data-theme') || 'dark',
     };

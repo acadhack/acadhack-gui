@@ -8,6 +8,10 @@ import time
 import re
 from typing import Any, Dict, List, Union
 
+
+import random
+import config
+
 from google import genai
 from google.genai import types
 
@@ -135,7 +139,6 @@ class GeminiSolver:
             if ch in "ABCD":
                 return ch
 
-        # Ultra-paranoid fallback
         return "A"
 
     def get_answer(self, quiz_data: Dict[str, Any]) -> str:
@@ -143,6 +146,16 @@ class GeminiSolver:
         Call Gemini with the multimodal quiz_data and return a single
         capital letter: A, B, C, or D.
         """
+        # Check for Guess Mode override using dynamic config
+        if getattr(config, "GUESS", None) and config.GUESS.ENABLED:
+            if config.GUESS.OPTION == "RANDOM":
+                choice = random.choice(["A", "B", "C", "D"])
+                print(f"[GeminiSolver] Guess Mode (RANDOM): Choosing {choice}")
+                return choice
+            else:
+                print(f"[GeminiSolver] Guess Mode (FIXED): Choosing {config.GUESS.OPTION}")
+                return config.GUESS.OPTION
+
         self._enforce_rate_limit()
 
         contents = self._build_contents(quiz_data)

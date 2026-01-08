@@ -78,6 +78,8 @@ class Api:
                 "stealthEnabled": settings.get("STEALTH_ENABLED", False),
                 "minDelaySeconds": settings.get("MIN_DELAY_SECONDS", 5.0),
                 "maxDelaySeconds": settings.get("MAX_DELAY_SECONDS", 20.0),
+                "guessEnabled": settings.get("GUESS_ENABLED", False),
+                "guessOption": settings.get("GUESS_OPTION", "A"),
                 "boosterEnabled": settings.get("BOOSTER_ENABLED", False),
                 "THEME": settings.get("THEME", "dark"),
             }
@@ -94,10 +96,16 @@ class Api:
                 "STEALTH_ENABLED": bool(settings_dict.get("stealthEnabled", False)),
                 "MIN_DELAY_SECONDS": float(settings_dict.get("minDelaySeconds", 5.0)),
                 "MAX_DELAY_SECONDS": float(settings_dict.get("maxDelaySeconds", 20.0)),
+                "GUESS_ENABLED": bool(settings_dict.get("guessEnabled", False)),
+                "GUESS_OPTION": str(settings_dict.get("guessOption", "A")),
                 "BOOSTER_ENABLED": bool(settings_dict.get("boosterEnabled", False)),
                 "THEME": str(settings_dict.get("THEME", "dark")),
             }
             self.config_manager.update_settings(cleaned_settings)
+            
+            # Hot-swap: Reload config in memory so the running loop/solver sees changes immediately
+            reload(config)
+            
             return {"status": "success"}
         except Exception as e:
             return {"status": "error", "message": str(e)}
@@ -195,64 +203,10 @@ class Api:
     # ------------------------------------------------------------------ #
 
     def copy_to_clipboard(self, text):
-        """Called by JS to copy text to system clipboard."""
+        """Called by JS to copy text to system clipboard using pyperclip."""
         try:
-            if sys.platform == 'win32':
-                # Windows: Use ctypes to call user32.dll directly.
-                # This bypasses OLE/COM entirely, avoiding "OleSetClipboard" errors.
-                import ctypes
-                from ctypes import wintypes
-                import time
-
-                user32 = ctypes.windll.user32
-                kernel32 = ctypes.windll.kernel32
-
-                CF_UNICODETEXT = 13
-                GMEM_MOVEABLE = 0x0002
-                
-                # Retry logic for OpenClipboard (in case it's locked)
-                success = False
-                for _ in range(5):
-                    if user32.OpenClipboard(None):
-                        success = True
-                        break
-                    time.sleep(0.1)
-                
-                if not success:
-                    return {"status": "error", "message": "Could not open clipboard"}
-
-                try:
-                    user32.EmptyClipboard()
-                    
-                    # Allocate global memory
-                    text_bytes = text.encode('utf-16le') + b'\x00\x00'
-                    h_mem = kernel32.GlobalAlloc(GMEM_MOVEABLE, len(text_bytes))
-                    if not h_mem:
-                        return {"status": "error", "message": "GlobalAlloc failed"}
-                    
-                    # Lock memory and copy data
-                    p_mem = kernel32.GlobalLock(h_mem)
-                    if not p_mem:
-                        return {"status": "error", "message": "GlobalLock failed"}
-                    
-                    ctypes.memmove(p_mem, text_bytes, len(text_bytes))
-                    kernel32.GlobalUnlock(h_mem)
-                    
-                    # Set clipboard data
-                    if not user32.SetClipboardData(CF_UNICODETEXT, h_mem):
-                        return {"status": "error", "message": "SetClipboardData failed"}
-                        
-                    # h_mem is now owned by the clipboard, so we don't free it
-                finally:
-                    user32.CloseClipboard()
-                    
-                return {"status": "success"}
-            else:
-                # Linux/macOS: Use Qt's clipboard (works reliably there)
-                from PySide6.QtGui import QGuiApplication
-                clipboard = QGuiApplication.clipboard()
-                clipboard.setText(text)
-                return {"status": "success"}
+            pyperclip.copy(text)
+            return {"status": "success", "message": "Copied to clipboard."}
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
@@ -335,6 +289,18 @@ if __name__ == "__main__":
 
     index_path = os.path.join(WEB_FOLDER, "index.html")
 
+    # App Icon
+    # We should have a logo file. Let's assume it's in the web folder or root.
+    # The user mentioned "logo-dark.ico" in valid conversations, let's try to find a best fit.
+    icon_path = os.path.join(WEB_FOLDER, "favicon.ico") 
+    if not os.path.exists(icon_path):
+         # check for other common names
+         for name in ["logo.png", "logo-dark.ico", "icon.png"]:
+             p = os.path.join(WEB_FOLDER, name)
+             if os.path.exists(p):
+                 icon_path = p
+                 break
+
     window = webview.create_window(
         "AcadHack Control Panel",
         index_path,
@@ -359,4 +325,4 @@ if __name__ == "__main__":
 
     # FIX: Explicitly use 'qt' to match the installed dependencies
     # and ensure Chromium-level CSS performance.
-    webview.start(debug=False, gui="qt")
+    webview.start(debug=False, gui="qt", icon=icon_path)

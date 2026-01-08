@@ -16,13 +16,15 @@ VENV_DIR=".venv"
 if [ ! -d "$VENV_DIR" ]; then
     echo "Creating virtual environment..."
     python3 -m venv "$VENV_DIR"
-    
-    echo "Installing dependencies..."
     source "$VENV_DIR/bin/activate"
     pip install --upgrade pip
+    echo "Installing dependencies..."
     pip install -r requirements.txt
 else
     source "$VENV_DIR/bin/activate"
+    # Always check for new requirements (fast if already installed)
+    echo "Checking dependencies..."
+    pip install -r requirements.txt
 fi
 
 # Run the application

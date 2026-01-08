@@ -63,7 +63,18 @@ OPTION_LABEL_CLASS = "option-label-box"
 ACTION_BUTTON_CLASS = "selected-btn"
 
 POPUP_OVERLAY_CLASS = "popup-overlay"
-POPUP_YES_BUTTON_CLASS = "yes-btn"
+POPUP_YES_BUTTON_CLASS = "yes-btn"  # Kept for backward compat / reference
+
+# Robust XPath to find the Yes/Confirm button:
+# 1. Standard .yes-btn class
+# 2. The specific orange button style the user reported
+# 3. Any button containing "Yes"
+POPUP_CONFIRM_XPATH = (
+    "//*[contains(@class, 'yes-btn')] | "
+    "//*[contains(@class, 'bg-[#FF8A00]')] | "
+    "//button[contains(text(), 'Yes')] | "
+    "//div[contains(text(), 'Yes') and contains(@class, 'cursor-pointer')]"
+)
 
 # Text labels for the action button
 NEXT_BUTTON_TEXT = "Next Question"
@@ -114,12 +125,36 @@ class Booster:
 # Singleton instance used throughout the app
 BOOSTER = Booster()
 
+
+# ==========================
+# Guess Mode configuration
+# ==========================
+
+@dataclass
+class Guess:
+    """
+    Configuration for Guess Mode.
+
+    ENABLED:
+        Turn Guess Mode on or off.
+    OPTION:
+        The option to select. Can be "A", "B", "C", "D", or "RANDOM".
+    """
+    ENABLED: bool = False
+    OPTION: str = "A"
+
+
+# Singleton instance used throughout the app
+GUESS = Guess()
+
 # Apply JSON overrides for Stealth and Booster if loaded
 if '_data' in locals():
     STEALTH.ENABLED = _data.get("STEALTH_ENABLED", STEALTH.ENABLED)
     STEALTH.MIN_DELAY_SECONDS = _data.get("MIN_DELAY_SECONDS", STEALTH.MIN_DELAY_SECONDS)
     STEALTH.MAX_DELAY_SECONDS = _data.get("MAX_DELAY_SECONDS", STEALTH.MAX_DELAY_SECONDS)
     BOOSTER.ENABLED = _data.get("BOOSTER_ENABLED", BOOSTER.ENABLED)
+    GUESS.ENABLED = _data.get("GUESS_ENABLED", GUESS.ENABLED)
+    GUESS.OPTION = _data.get("GUESS_OPTION", GUESS.OPTION)
 
 # Booster selectors
 BOOSTER_QUESTION_CLASS = "boosterQuestion"

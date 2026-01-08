@@ -506,7 +506,9 @@ class AutomationController:
                         time.sleep(0.5)
 
                         # Stealth Mode: human-like random delay between questions
-                        if getattr(config, "STEALTH", None) and config.STEALTH.ENABLED:
+                        # IGNORED if Guess Mode is active (user wants speed)
+                        is_guess_mode = getattr(config, "GUESS", None) and config.GUESS.ENABLED
+                        if not is_guess_mode and getattr(config, "STEALTH", None) and config.STEALTH.ENABLED:
                             delay = random.uniform(
                                 config.STEALTH.MIN_DELAY_SECONDS,
                                 config.STEALTH.MAX_DELAY_SECONDS,
@@ -545,32 +547,78 @@ class AutomationController:
                                 break
 
                         try:
-                            # Wait for popup overlay to appear
-                            wait.until(
-                                EC.presence_of_element_located(
-                                    (By.CLASS_NAME, config.POPUP_OVERLAY_CLASS)
-                                )
-                            )
+                            # NUCLEAR OPTION: Wait for popup to be conceptually ready, then use JS to find & click
+                            # We bypass standard Selenium element_to_be_clickable checks which might fail on some overlays.
+                            log_queue.put("[INFO] Waiting for confirmation popup...")
+                            
+                            # 1. Give the popup a moment to render
+                            time.sleep(1.0)
 
-                            # Wait for the YES button to be clickable
-                            yes_button = wait.until(
-                                EC.element_to_be_clickable(
-                                    (By.CLASS_NAME, config.POPUP_YES_BUTTON_CLASS)
-                                )
-                            )
+                            clicked = False
+                            # Try for 5 seconds to find and click the button via JS
+                            for _ in range(10):
+                                result = driver.execute_script("""
+                                    function findAndClick() {
+                                        // Strategy 1: Specific Tailwind Class (Orange Button)
+                                        // Note: We search by substring because full class strings are brittle
+                                        const allElements = document.getElementsByTagName('*');
+                                        for (let i = 0; i < allElements.length; i++) {
+                                            let el = allElements[i];
+                                            let cls = el.className;
+                                            if (typeof cls === 'string' && cls.includes('bg-[#FF8A00]')) {
+                                                el.click();
+                                                return "Clicked orange button";
+                                            }
+                                        }
 
-                            # Robust JS click to bypass overlays
-                            try:
-                                driver.execute_script(
-                                    "arguments[0].click();", yes_button
+                                        // Strategy 2: Text Content "Yes" or "Confirm" in a button or clickable div
+                                        // This is a backup if the class name changes
+                                        const buttons = document.querySelectorAll('button, div.cursor-pointer');
+                                        for (let b of buttons) {
+                                            let txt = b.innerText || "";
+                                            if (txt.includes('Yes') || txt.includes('Confirm') || txt.includes('Submit')) {
+                                                // Check for visibility somewhat
+                                                if (b.offsetParent !== null) {
+                                                    b.click();
+                                                    return "Clicked text button: " + txt;
+                                                }
+                                            }
+                                        }
+
+                                        // Strategy 3: Legacy class .yes-btn
+                                        const legacy = document.querySelector('.yes-btn');
+                                        if (legacy) {
+                                            legacy.click();
+                                            return "Clicked .yes-btn";
+                                        }
+                                        
+                                        return null;
+                                    }
+                                    return findAndClick();
+                                """)
+                                
+                                if result:
+                                    log_queue.put(f"[INFO] JS Confirmation: {result}")
+                                    clicked = True
+                                    break
+                                time.sleep(0.5)
+
+                            if clicked:
+                                log_queue.put("[INFO] Quiz submitted successfully.")
+                            else:
+                                 # Fallback to manual Selenium wait if JS failed (unlikely but safe)
+                                log_queue.put("[WARN] JS click failed. Trying standard Selenium wait...")
+                                yes_button = wait.until(
+                                    EC.element_to_be_clickable(
+                                        (By.XPATH, config.POPUP_CONFIRM_XPATH)
+                                    )
                                 )
-                            except Exception:
                                 yes_button.click()
+                                log_queue.put("[INFO] Standard Selenium click success.")
 
-                            log_queue.put("[INFO] Quiz submitted successfully.")
                         except TimeoutException:
                             log_queue.put(
-                                "[ERROR] Confirmation popup did not appear in time."
+                                "[ERROR] Confirmation popup did not appear or was not clickable."
                             )
                         except WebDriverException as e:
                             log_queue.put(

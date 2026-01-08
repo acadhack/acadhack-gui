@@ -88,12 +88,19 @@ def scrape_quiz_data(driver: WebDriver, config, mode: str = "standard") -> Dict[
     if mode == "booster":
         question_class = config.BOOSTER_QUESTION_CLASS
 
-    # Wait for the question area to be visible
+    # Determine if we are in Guess Mode (Blind Mode)
+    # If so, we skip extracting text/images for speed and privacy.
+    is_guess_mode = getattr(config, "GUESS", None) and config.GUESS.ENABLED
+
+    # Wait for the question area to be visible (needed to ensure page load)
     question_element: WebElement = wait.until(
         EC.visibility_of_element_located((By.CLASS_NAME, question_class))
     )
 
-    question_content = _extract_element_content(question_element)
+    if is_guess_mode:
+        question_content = ["(Guess Mode - Content Skipped)"]
+    else:
+        question_content = _extract_element_content(question_element)
 
     # Wait for all option cards to be present
     option_cards = wait.until(
@@ -112,6 +119,12 @@ def scrape_quiz_data(driver: WebDriver, config, mode: str = "standard") -> Dict[
             continue
 
         if label not in config.SUPPORTED_OPTION_LABELS:
+            continue
+
+        if is_guess_mode:
+             # Just map the element, skip content extraction
+            options_data[label] = ["(Guess Mode - Option Skipped)"]
+            option_elements[label] = card
             continue
 
         # FIX 2: Target the specific content container (.option-text)

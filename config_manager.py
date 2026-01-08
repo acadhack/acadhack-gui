@@ -67,6 +67,8 @@ class ConfigManager:
             "STEALTH_ENABLED": config.STEALTH.ENABLED,
             "MIN_DELAY_SECONDS": config.STEALTH.MIN_DELAY_SECONDS,
             "MAX_DELAY_SECONDS": config.STEALTH.MAX_DELAY_SECONDS,
+            "GUESS_ENABLED": config.GUESS.ENABLED,
+            "GUESS_OPTION": config.GUESS.OPTION,
             "BOOSTER_ENABLED": config.BOOSTER.ENABLED,
             "THEME": config.THEME,
         }
@@ -85,6 +87,8 @@ class ConfigManager:
         current_data["STEALTH_ENABLED"] = bool(settings.get("STEALTH_ENABLED", False))
         current_data["MIN_DELAY_SECONDS"] = float(settings.get("MIN_DELAY_SECONDS", 5.0))
         current_data["MAX_DELAY_SECONDS"] = float(settings.get("MAX_DELAY_SECONDS", 20.0))
+        current_data["GUESS_ENABLED"] = bool(settings.get("GUESS_ENABLED", False))
+        current_data["GUESS_OPTION"] = str(settings.get("GUESS_OPTION", "A"))
         current_data["BOOSTER_ENABLED"] = bool(settings.get("BOOSTER_ENABLED", False))
         current_data["THEME"] = str(settings.get("THEME", "dark"))
 

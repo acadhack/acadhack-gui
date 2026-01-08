@@ -24,6 +24,7 @@
     <!-- App Layout -->
     <div class="app-layout">
 
+
         <!-- HEADER -->
         <header class="app-header">
             <div class="header-left">
@@ -107,7 +108,7 @@
                         <label for="booster-toggle">
                             <span>Alternate Quiz (Booster)</span>
                             <span class="field-tooltip field-tooltip-left" tabindex="0"
-                                data-tooltip="Enable this for Booster Quizzes. Disables popup confirmation.">?</span>
+                                data-tooltip="Use this for Booster Quizzes. WARNING: Behavior is slightly buggy in this mode.">?</span>
                         </label>
                     </div>
 
@@ -145,6 +146,42 @@
                         </div>
                     </div>
 
+                    <!-- Guess Mode Toggle -->
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="guess-toggle">
+                        <label for="guess-toggle">
+                            <span>Enable Guess Mode</span>
+                            <span class="field-tooltip" tabindex="0"
+                                data-tooltip="Skip Gemini API and force a specific answer or choose randomly.">?</span>
+                        </label>
+                    </div>
+
+                    <!-- Guess Options (Hidden by default) -->
+                    <div class="guess-options" id="guess-options">
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="guess-option" value="A" checked>
+                                <span>A</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="guess-option" value="B">
+                                <span>B</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="guess-option" value="C">
+                                <span>C</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="guess-option" value="D">
+                                <span>D</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="guess-option" value="RANDOM">
+                                <span>Random</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- SAVE BUTTON -->
                     <div class="form-group" style="margin-top: 1.5rem;">
                         <button id="btn-save-config" class="btn-secondary">
@@ -154,7 +191,7 @@
                 </div>
 
                 <div class="config-footer">
-                    <p class="version-text">v1.1.0 // STABLE</p>
+                    <p class="version-text">v1.2.0 // STABLE</p>
                 </div>
             </aside>
 
